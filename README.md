@@ -154,16 +154,16 @@ TRANSLATION_RESULT Translate(U64 dtb, VIRT_ADDR va)
 {
 	U64 pml4 = dtb;
 	PML4E pml4e;
-	readPhys(pml4 + 8 * va.pml4_index, &pml4e, sizeof(PML4E));
+	ReadPhys(pml4 + 8 * va.pml4_index, &pml4e, sizeof(PML4E));
 	U64 pdpt = pml4e.pfn << 12;
 	PDPTE pdpte;
-	readPhys(pdpt + 8 * va.pdpt_index, &pdpte, sizeof(PDPTE));
+	ReadPhys(pdpt + 8 * va.pdpt_index, &pdpte, sizeof(PDPTE));
 	U64 pd = pdpte.pfn << 12;
 	PDE pde;
-	readPhys(pd + 8 * va.pd_index, &pde, sizeof(PDE));
+	ReadPhys(pd + 8 * va.pd_index, &pde, sizeof(PDE));
 	U64 pt = pde.pfn << 12;
 	PTE pte;
-	readPhys(pt + 8 * va.pt_index, &pte, sizeof(PTE));
+	ReadPhys(pt + 8 * va.pt_index, &pte, sizeof(PTE));
 	U64 physical_page = pte.pfn << 12;
 	return { pml4, pml4e, pdpt, pdpte, pd, pde, pt, pte, physical_page + va.offset_4kb };
 }
@@ -176,6 +176,6 @@ for (int i = 0; i < BYTES_TO_PAGES(image.mod.size); i++)
 	VIRT_ADDR va = alloc_base + i * PAGE_SIZE;
 	auto translation = Translate(dtb, va);
 	translation.pte.nx = false;
-	writePhys(translation.pt + 8 * va.pt_index, &translation.pte, sizeof(PTE));
+	WritePhys(translation.pt + 8 * va.pt_index, &translation.pte, sizeof(PTE));
 }
 ```
